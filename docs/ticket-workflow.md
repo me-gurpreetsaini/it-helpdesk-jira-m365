@@ -18,7 +18,18 @@
 | P3 | 8 business hours (1 business day) | Business hours |
 | P4 | 16 business hours (2 business days) | Business hours |
 
-First response means a person replied to the customer. It is not the same as resolution.
+## Resolution targets
+
+| Priority | Target | Calendar |
+|---|---|---|
+| P1 | 4 hours | 24/7 |
+| P2 | 8 business hours (1 business day) | Business hours |
+| P3 | 24 business hours (3 business days) | Business hours |
+| P4 | 40 business hours (5 business days) | Business hours |
+
+Resolution means the issue is fixed and the ticket reaches Resolved. The clock pauses while waiting for the customer.
+
+First response means a person replied to the customer. It is not the same as resolution. 
 
 ## SLA clock rules
 
