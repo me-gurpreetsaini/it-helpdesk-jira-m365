@@ -5,32 +5,47 @@
 | Request type | Password reset (Service request) |
 | Priority | High (P2) |
 | Status | Resolved |
-| Reported by | Sarah Khan (user) |
+| Reported by | Sarah Khan (simulated user) |
+| Top-60 reference | #21 Active Directory account locked |
 
 ## User report
-"I came back from vacation today and my password isn't working. I tried it like 5 times and now it says my account is locked or something. I have a meeting at 2 and I need to get into my email."
+"I came back from vacation today and my password isn't working. I tried it like 5 times and now it says my account is locked or something. I have a meeting at 2 and I need to get into my emai0l."
 
 ## Triage
-One user cannot work, so High. First response sent with questions about the account, the exact error and phone access.
+One user cannot work and has a deadline, so High (P2). First response asked which account is affected, the exact error and whether she can receive a verification code.
 
-## Steps taken
-1. Verified the user's identity before touching the account.
-2. Located the account in Active Directory and confirmed it was locked out.
-3. Unlocked the account and set a temporary password with "change at next logon".
-4. User signed in and set a new password.
-5. Asked the user to update the saved password on her phone.
+## Reproduction (lab)
+Domain lockout policy: 5 invalid attempts, 30 minute lockout. From a remote desktop session to CLIENT01 I entered a wrong password for `skhan` five times, then the correct password. The account was rejected as locked out even with the right password.
 
-## Resolution
-Account unlocked and password reset. User confirmed signin.
+![Lockout message](../screenshots/10-it1-lockout-message.png)
+
+## Investigation
+1. Confirmed the account state on DC01: `LockedOut: True`.
+
+![Locked out in AD](../screenshots/11-it1-ad-locked-out.png)
+
+2. Checked the Security log for Event ID 4740 (account lockout). The caller computer was DC01, because the reproduction was run from DC01. On a real ticket this field shows which device is sending the bad passwords.
+
+![Event 4740](../screenshots/12-it1-event-4740.png)
+
+## Fix
+1. Identity verification (employee ID, manager name) simulated for the lab.
+2. In Active Directory Users and Computers: Reset Password, temporary password, "User must change password at next logon", and "Unlock the user's account".
+3. Verified `LockedOut: False` and `PasswordExpired: True` (forced change pending).
+
+![Unlocked in AD](../screenshots/13-it1-ad-unlocked.png)
+
+## Verification
+Signed in as the user at the CLIENT01 console, was prompted to change the password and reached the desktop.
+
+![User signed in](../screenshots/14-it1-user-signed-in.png)
 
 ## Root cause
-An old password saved on the user's phone kept retrying while she was away, and her own failed attempts triggered the lockout policy.
+Repeated failed sign-ins exceeded the lockout threshold. In the ticket story, the likely source is an old password saved on the user's phone; in the lab the bad attempts were typed deliberately.
 
-## Follow-up
-User updated the phone password. Check the account has not re-locked after 24 hours. See the KB article "Unlock a locked account".
+## Prevention and follow-up
+Ask the user to update saved passwords on all devices. If the lockout repeats, check Event 4740 for the caller computer to find the source. See the KB article "Unlock a locked account".
 
-## Screenshots
-![Worked ticket notes](../screenshots/04-it1-worked-ticket-notes.png)
+*Reproduced by me in a home lab (corp.local domain, DC01 and CLIENT01 virtual machines).*
+
 ![SLA met](../screenshots/05-it1-sla-resolved.png)
-
-*Simulated scenario. The Active Directory steps will be performed in the corp.local lab (Pls see the AD Help Desk lab project).*
